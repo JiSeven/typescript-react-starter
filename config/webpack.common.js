@@ -4,55 +4,53 @@ const Dotenv = require('dotenv-webpack');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
+const cwd = process.cwd();
+
 module.exports = {
     entry: {
-        main: path.join(process.cwd(), 'src'),
+        main: path.join(cwd, 'src'),
     },
     output: {
-        path: path.join(process.cwd(), 'build'),
-        filename: '[name].[fullhash].js',
+        path: path.join(cwd, 'build'),
+        filename: '[name].[contenthash].js',
     },
     module: {
         rules: [
             {
                 test: /\.tsx?$/,
-                include: path.join(process.cwd(), 'src'),
-                use: [
-                    {
-                        loader: 'ts-loader',
-                        options: { transpileOnly: true },
-                    },
-                ],
+                loader: 'ts-loader',
                 exclude: /node_modules/,
+                options: {
+                    transpileOnly: true,
+                },
             },
             {
-                test: /\.module\.scss$/,
+                test: /\.css$/i,
                 use: [
                     {
                         loader: 'css-loader',
                         options: {
                             modules: {
-                                localIdentName:
-                                    '[path]-[local]-[hash:base64:5]',
+                                mode: 'local',
+                                auto: true,
+                                exportGlobals: true,
+                                localIdentContext: path.join(cwd, 'src'),
+                                exportLocalsConvention: 'camelCaseOnly',
+                                namedExport: true,
+                                exportOnlyLocals: false,
                             },
-                            sourceMap: true,
                         },
                     },
-                    'style-loader'
                 ],
             },
             {
-                test: /\.css$/,
-                exclude: /\.module\.css$/,
-                use: [
-                    'css-loader',
-                    'style-loader',
-                ],
+                test: /\.(png|jpe?g|gif|svg|eot|ttf|woff|woff2)$/i,
+                type: 'asset',
             },
         ],
     },
     resolve: {
-        modules: [path.join(process.cwd(), 'src'), 'node_modules'],
+        modules: [path.join(cwd, 'src'), 'node_modules'],
         extensions: ['.tsx', '.ts', '.js', '.css'],
     },
     plugins: [
@@ -60,11 +58,10 @@ module.exports = {
         new HtmlWebpackPlugin({
             hash: true,
             inject: true,
-            template: path.join(process.cwd(), 'src', 'index.html'),
+            template: path.join(cwd, 'src', 'index.html'),
             filename: 'index.html',
             scriptLoading: 'defer',
         }),
         new Dotenv(),
     ],
 };
-
